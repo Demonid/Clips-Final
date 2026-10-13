@@ -1,0 +1,13 @@
+{
+  "name": "papeleria-clips",
+  "version": "1.0.0",
+  "description": "Sistema web de catalogo y pedidos para Papeleria Clips",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "sqlite3": "^5.1.7"
+  }
+}
