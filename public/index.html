@@ -10,19 +10,104 @@
 </head>
 <body>
   <div id="app">
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <!-- Barra de navegacion -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
       <div class="container">
-        <a class="navbar-brand fw-bold" href="#">Papelería Clips</a>
+        <a class="navbar-brand fw-bold" @click.prevent="cambiarVista('inicio')" href="#">
+          Papelería Clips
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#menuPrincipal">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="menuPrincipal">
+          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+            <li class="nav-item">
+              <a class="nav-link" :class="{ active: vistaActual === 'inicio' }" href="#" @click.prevent="cambiarVista('inicio')">
+                Página principal
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" :class="{ active: vistaActual === 'catalogo' }" href="#" @click.prevent="cambiarVista('catalogo')">
+                Catálogo de productos
+              </a>
+            </li>
+          </ul>
+        </div>
       </div>
     </nav>
 
     <main class="container my-4">
-      <h1>{{ titulo }}</h1>
-      <p>Bienvenido al sistema en línea de Papelería Clips.</p>
+      <!-- Vista: Pagina principal -->
+      <section v-if="vistaActual === 'inicio'">
+        <div class="p-4 p-md-5 mb-4 rounded-3 banner-principal text-white">
+          <div class="col-md-8 px-0">
+            <h1 class="display-6 fw-bold">Bienvenido a Papelería Clips</h1>
+            <p class="lead my-3">
+              Encuentra útiles escolares, artículos de oficina, material de arte y papelería en general. Consulta nuestro catálogo y disponibilidad en línea.
+            </p>
+            <button class="btn btn-light btn-lg fw-semibold text-primary" @click="cambiarVista('catalogo')">
+              Ver catálogo completo
+            </button>
+          </div>
+        </div>
+
+        <h3 class="mb-3">Productos destacados</h3>
+        <div class="row g-4">
+          <div class="col-sm-6 col-md-4 col-lg-3" v-for="producto in productos.slice(0, 4)" :key="producto.id">
+            <div class="card h-100 shadow-sm tarjeta-producto">
+              <img :src="producto.imagen" class="card-img-top imagen-producto" :alt="producto.nombre">
+              <div class="card-body d-flex flex-column">
+                <span class="badge bg-secondary align-self-start mb-2">{{ producto.categoria }}</span>
+                <h5 class="card-title fs-6">{{ producto.nombre }}</h5>
+                <p class="card-text text-muted small flex-grow-1">{{ producto.descripcion }}</p>
+                <div class="d-flex justify-content-between align-items-center mt-2">
+                  <span class="fw-bold text-primary fs-5">${{ producto.precio.toFixed(2) }}</span>
+                  <small class="text-success" v-if="producto.existencias > 0">Disponible ({{ producto.existencias }})</small>
+                  <small class="text-danger" v-else>Agotado</small>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Vista: Catalogo de productos -->
+      <section v-if="vistaActual === 'catalogo'">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h2 class="mb-0">Catálogo de productos</h2>
+          <span class="text-muted">{{ productos.length }} productos</span>
+        </div>
+
+        <div class="row g-4">
+          <div class="col-sm-6 col-md-4 col-lg-3" v-for="producto in productos" :key="producto.id">
+            <div class="card h-100 shadow-sm tarjeta-producto">
+              <img :src="producto.imagen" class="card-img-top imagen-producto" :alt="producto.nombre">
+              <div class="card-body d-flex flex-column">
+                <span class="badge bg-secondary align-self-start mb-2">{{ producto.categoria }}</span>
+                <h5 class="card-title fs-6">{{ producto.nombre }}</h5>
+                <p class="card-text text-muted small flex-grow-1">{{ producto.descripcion }}</p>
+                <div class="d-flex justify-content-between align-items-center mt-2">
+                  <span class="fw-bold text-primary fs-5">${{ producto.precio.toFixed(2) }}</span>
+                  <small class="text-success" v-if="producto.existencias > 0">Stock: {{ producto.existencias }}</small>
+                  <small class="text-danger" v-else>Agotado</small>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
     </main>
+
+    <footer class="bg-white border-top py-3 mt-5">
+      <div class="container text-center text-muted small">
+        Papelería Clips - Catálogo en línea
+      </div>
+    </footer>
   </div>
 
-  <!-- Vue 3 -->
+  <!-- Bootstrap JS y Vue 3 -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
   <script src="/js/app.js"></script>
 </body>
