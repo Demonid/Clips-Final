@@ -4,7 +4,8 @@ createApp({
   data() {
     return {
       vistaActual: 'inicio',
-      productos: []
+      productos: [],
+      productoSeleccionado: null
     };
   },
   mounted() {
@@ -21,6 +22,10 @@ createApp({
       } catch (error) {
         console.error('Error al cargar productos:', error);
       }
+    },
+    verDetalle(producto) {
+      this.productoSeleccionado = producto;
+      this.vistaActual = 'detalle';
     }
   }
 }).mount('#app');

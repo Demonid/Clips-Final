@@ -56,15 +56,16 @@
         <div class="row g-4">
           <div class="col-sm-6 col-md-4 col-lg-3" v-for="producto in productos.slice(0, 4)" :key="producto.id">
             <div class="card h-100 shadow-sm tarjeta-producto">
-              <img :src="producto.imagen" class="card-img-top imagen-producto" :alt="producto.nombre">
+              <img :src="producto.imagen" class="card-img-top imagen-producto" :alt="producto.nombre" @click="verDetalle(producto)">
               <div class="card-body d-flex flex-column">
                 <span class="badge bg-secondary align-self-start mb-2">{{ producto.categoria }}</span>
                 <h5 class="card-title fs-6">{{ producto.nombre }}</h5>
                 <p class="card-text text-muted small flex-grow-1">{{ producto.descripcion }}</p>
                 <div class="d-flex justify-content-between align-items-center mt-2">
                   <span class="fw-bold text-primary fs-5">${{ producto.precio.toFixed(2) }}</span>
-                  <small class="text-success" v-if="producto.existencias > 0">Disponible ({{ producto.existencias }})</small>
-                  <small class="text-danger" v-else>Agotado</small>
+                  <button class="btn btn-outline-primary btn-sm" @click="verDetalle(producto)">
+                    Ver detalle
+                  </button>
                 </div>
               </div>
             </div>
@@ -82,16 +83,50 @@
         <div class="row g-4">
           <div class="col-sm-6 col-md-4 col-lg-3" v-for="producto in productos" :key="producto.id">
             <div class="card h-100 shadow-sm tarjeta-producto">
-              <img :src="producto.imagen" class="card-img-top imagen-producto" :alt="producto.nombre">
+              <img :src="producto.imagen" class="card-img-top imagen-producto" :alt="producto.nombre" @click="verDetalle(producto)">
               <div class="card-body d-flex flex-column">
                 <span class="badge bg-secondary align-self-start mb-2">{{ producto.categoria }}</span>
                 <h5 class="card-title fs-6">{{ producto.nombre }}</h5>
                 <p class="card-text text-muted small flex-grow-1">{{ producto.descripcion }}</p>
                 <div class="d-flex justify-content-between align-items-center mt-2">
                   <span class="fw-bold text-primary fs-5">${{ producto.precio.toFixed(2) }}</span>
-                  <small class="text-success" v-if="producto.existencias > 0">Stock: {{ producto.existencias }}</small>
-                  <small class="text-danger" v-else>Agotado</small>
+                  <button class="btn btn-outline-primary btn-sm" @click="verDetalle(producto)">
+                    Ver detalle
+                  </button>
                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Vista: Detalle del producto -->
+      <section v-if="vistaActual === 'detalle' && productoSeleccionado">
+        <div class="mb-3">
+          <button class="btn btn-outline-secondary btn-sm" @click="cambiarVista('catalogo')">
+            &larr; Volver al catálogo
+          </button>
+        </div>
+
+        <div class="card shadow-sm">
+          <div class="row g-0">
+            <div class="col-md-5">
+              <img :src="productoSeleccionado.imagen" class="img-fluid rounded-start w-100 imagen-detalle" :alt="productoSeleccionado.nombre">
+            </div>
+            <div class="col-md-7">
+              <div class="card-body p-4">
+                <span class="badge bg-secondary mb-2">{{ productoSeleccionado.categoria }}</span>
+                <h2 class="card-title mb-3">{{ productoSeleccionado.nombre }}</h2>
+                <p class="fs-3 fw-bold text-primary mb-3">${{ productoSeleccionado.precio.toFixed(2) }}</p>
+                <p class="card-text text-secondary mb-4">{{ productoSeleccionado.descripcion }}</p>
+
+                <p class="mb-4">
+                  <strong>Disponibilidad: </strong>
+                  <span class="text-success" v-if="productoSeleccionado.existencias > 0">
+                    En existencia ({{ productoSeleccionado.existencias }} unidades)
+                  </span>
+                  <span class="text-danger" v-else>Agotado</span>
+                </p>
               </div>
             </div>
           </div>
