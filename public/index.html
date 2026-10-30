@@ -28,9 +28,27 @@
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" :class="{ active: vistaActual === 'catalogo' && !busquedaActiva }" href="#" @click.prevent="verCatalogoCompleto">
+              <a class="nav-link" :class="{ active: vistaActual === 'catalogo' && !categoriaActiva && !busquedaActiva }" href="#" @click.prevent="verCatalogoCompleto">
                 Catálogo de productos
               </a>
+            </li>
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" :class="{ active: vistaActual === 'catalogo' && categoriaActiva }" href="#" role="button" data-bs-toggle="dropdown">
+                Categorías
+              </a>
+              <ul class="dropdown-menu">
+                <li>
+                  <a class="dropdown-item" href="#" @click.prevent="seleccionarCategoria('')">
+                    Todas las categorías
+                  </a>
+                </li>
+                <li><hr class="dropdown-divider"></li>
+                <li v-for="cat in categorias" :key="cat.id">
+                  <a class="dropdown-item" href="#" @click.prevent="seleccionarCategoria(cat.id)">
+                    {{ cat.nombre }}
+                  </a>
+                </li>
+              </ul>
             </li>
           </ul>
 
@@ -65,6 +83,21 @@
           </div>
         </div>
 
+        <!-- Acceso rapido a categorias -->
+        <div class="mb-4">
+          <h4 class="mb-3">Explorar por categoría</h4>
+          <div class="d-flex flex-wrap gap-2">
+            <button
+              v-for="cat in categorias"
+              :key="cat.id"
+              class="btn btn-outline-primary"
+              @click="seleccionarCategoria(cat.id)"
+            >
+              {{ cat.nombre }}
+            </button>
+          </div>
+        </div>
+
         <h3 class="mb-3">Productos destacados</h3>
         <div class="row g-4">
           <div class="col-sm-6 col-md-4 col-lg-3" v-for="producto in productosDestacados" :key="producto.id">
@@ -86,19 +119,42 @@
         </div>
       </section>
 
-      <!-- Vista: Catalogo y Resultados de busqueda -->
+      <!-- Vista: Catalogo, Resultados de busqueda y Productos por categoria -->
       <section v-if="vistaActual === 'catalogo'">
+        <!-- Botones de filtro por categoria -->
+        <div class="mb-4 d-flex flex-wrap gap-2">
+          <button
+            class="btn btn-sm"
+            :class="categoriaActiva === '' ? 'btn-primary' : 'btn-outline-primary'"
+            @click="seleccionarCategoria('')"
+          >
+            Todas
+          </button>
+          <button
+            v-for="cat in categorias"
+            :key="cat.id"
+            class="btn btn-sm"
+            :class="categoriaActiva === cat.id ? 'btn-primary' : 'btn-outline-primary'"
+            @click="seleccionarCategoria(cat.id)"
+          >
+            {{ cat.nombre }}
+          </button>
+        </div>
+
         <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
           <div>
             <h2 class="mb-0" v-if="busquedaActiva">
               Resultados de búsqueda: "{{ busquedaActiva }}"
             </h2>
+            <h2 class="mb-0" v-else-if="nombreCategoriaActiva">
+              Productos por categoría: {{ nombreCategoriaActiva }}
+            </h2>
             <h2 class="mb-0" v-else>Catálogo de productos</h2>
           </div>
 
           <div class="d-flex align-items-center gap-2">
-            <button v-if="busquedaActiva" class="btn btn-outline-secondary btn-sm" @click="limpiarBusqueda">
-              Limpiar búsqueda
+            <button v-if="busquedaActiva || categoriaActiva" class="btn btn-outline-secondary btn-sm" @click="limpiarFiltros">
+              Ver todos
             </button>
             <span class="text-muted">{{ productos.length }} productos</span>
           </div>
@@ -106,7 +162,7 @@
 
         <!-- Mensaje cuando no hay resultados -->
         <div v-if="productos.length === 0" class="alert alert-info">
-          No se encontraron productos que coincidan con tu búsqueda.
+          No se encontraron productos con los filtros seleccionados.
         </div>
 
         <div class="row g-4">

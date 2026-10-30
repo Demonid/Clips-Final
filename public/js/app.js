@@ -4,14 +4,23 @@ createApp({
   data() {
     return {
       vistaActual: 'inicio',
+      categorias: [],
       productos: [],
       productosDestacados: [],
       productoSeleccionado: null,
       textoBusqueda: '',
-      busquedaActiva: ''
+      busquedaActiva: '',
+      categoriaActiva: ''
     };
   },
+  computed: {
+    nombreCategoriaActiva() {
+      const cat = this.categorias.find(c => c.id === this.categoriaActiva);
+      return cat ? cat.nombre : '';
+    }
+  },
   mounted() {
+    this.cargarCategorias();
     this.cargarProductosIniciales();
   },
   methods: {
@@ -24,8 +33,17 @@ createApp({
     verCatalogoCompleto() {
       this.textoBusqueda = '';
       this.busquedaActiva = '';
+      this.categoriaActiva = '';
       this.cargarProductos();
       this.vistaActual = 'catalogo';
+    },
+    async cargarCategorias() {
+      try {
+        const res = await fetch('/api/categorias');
+        this.categorias = await res.json();
+      } catch (error) {
+        console.error('Error al cargar categorias:', error);
+      }
     },
     async cargarProductosIniciales() {
       try {
@@ -43,6 +61,9 @@ createApp({
         if (this.busquedaActiva) {
           params.append('busqueda', this.busquedaActiva);
         }
+        if (this.categoriaActiva) {
+          params.append('categoria_id', this.categoriaActiva);
+        }
 
         const res = await fetch(`/api/productos?${params.toString()}`);
         this.productos = await res.json();
@@ -55,9 +76,15 @@ createApp({
       this.cargarProductos();
       this.vistaActual = 'catalogo';
     },
-    limpiarBusqueda() {
+    seleccionarCategoria(idCategoria) {
+      this.categoriaActiva = idCategoria;
+      this.cargarProductos();
+      this.vistaActual = 'catalogo';
+    },
+    limpiarFiltros() {
       this.textoBusqueda = '';
       this.busquedaActiva = '';
+      this.categoriaActiva = '';
       this.cargarProductos();
     },
     verDetalle(producto) {
