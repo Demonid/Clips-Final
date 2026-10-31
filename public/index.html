@@ -53,7 +53,7 @@
           </ul>
 
           <!-- Buscador de productos -->
-          <form class="d-flex" @submit.prevent="buscarProductos">
+          <form class="d-flex me-2 mb-2 mb-lg-0" @submit.prevent="buscarProductos">
             <input
               class="form-control form-control-sm me-2"
               type="search"
@@ -64,11 +64,21 @@
               Buscar
             </button>
           </form>
+
+          <!-- Boton Carrito -->
+          <button class="btn btn-warning btn-sm fw-semibold" @click="cambiarVista('carrito')">
+            Carrito ({{ carrito.length }})
+          </button>
         </div>
       </div>
     </nav>
 
     <main class="container my-4">
+      <!-- Mensaje de confirmacion al agregar al carrito -->
+      <div v-if="mensajeAlerta" class="alert alert-success py-2">
+        {{ mensajeAlerta }}
+      </div>
+
       <!-- Vista: Pagina principal -->
       <section v-if="vistaActual === 'inicio'">
         <div class="p-4 p-md-5 mb-4 rounded-3 banner-principal text-white">
@@ -175,9 +185,14 @@
                 <p class="card-text text-muted small flex-grow-1">{{ producto.descripcion }}</p>
                 <div class="d-flex justify-content-between align-items-center mt-2">
                   <span class="fw-bold text-primary fs-5">${{ producto.precio.toFixed(2) }}</span>
-                  <button class="btn btn-outline-primary btn-sm" @click="verDetalle(producto)">
-                    Ver detalle
-                  </button>
+                  <div class="d-flex gap-1">
+                    <button class="btn btn-outline-primary btn-sm" @click="verDetalle(producto)">
+                      Detalle
+                    </button>
+                    <button class="btn btn-primary btn-sm" @click="agregarAlCarrito(producto)" :disabled="producto.existencias === 0">
+                      + Carrito
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -212,8 +227,78 @@
                   </span>
                   <span class="text-danger" v-else>Agotado</span>
                 </p>
+
+                <div class="d-flex gap-2">
+                  <button
+                    class="btn btn-primary"
+                    @click="agregarAlCarrito(productoSeleccionado)"
+                    :disabled="productoSeleccionado.existencias === 0"
+                  >
+                    Agregar al carrito
+                  </button>
+                  <button class="btn btn-outline-primary" @click="cambiarVista('carrito')">
+                    Ir al carrito
+                  </button>
+                </div>
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Vista: Carrito de compras -->
+      <section v-if="vistaActual === 'carrito'">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h2 class="mb-0">Carrito de compras</h2>
+          <button class="btn btn-outline-secondary btn-sm" @click="cambiarVista('catalogo')">
+            Seguir comprando
+          </button>
+        </div>
+
+        <div v-if="carrito.length === 0" class="alert alert-secondary">
+          Tu carrito de compras está vacío.
+        </div>
+
+        <div v-else class="card shadow-sm">
+          <div class="table-responsive">
+            <table class="table align-middle mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th>Producto</th>
+                  <th>Categoría</th>
+                  <th>Precio unitario</th>
+                  <th>Cantidad</th>
+                  <th>Subtotal</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(item, index) in carrito" :key="item.id">
+                  <td>
+                    <div class="d-flex align-items-center gap-2">
+                      <img :src="item.imagen" :alt="item.nombre" width="50" height="40" class="rounded object-fit-cover">
+                      <span>{{ item.nombre }}</span>
+                    </div>
+                  </td>
+                  <td>{{ item.categoria }}</td>
+                  <td>${{ item.precio.toFixed(2) }}</td>
+                  <td>{{ item.cantidad }}</td>
+                  <td class="fw-semibold">${{ (item.precio * item.cantidad).toFixed(2) }}</td>
+                  <td class="text-end">
+                    <button class="btn btn-outline-danger btn-sm" @click="quitarDelCarrito(index)">
+                      Quitar
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="card-footer bg-white d-flex justify-content-between align-items-center py-3">
+            <span class="fs-5 fw-bold">Total: ${{ totalCarrito.toFixed(2) }}</span>
+            <button class="btn btn-success" disabled>
+              Continuar con el pedido (Próximamente)
+            </button>
           </div>
         </div>
       </section>

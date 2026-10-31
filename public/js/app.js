@@ -10,13 +10,18 @@ createApp({
       productoSeleccionado: null,
       textoBusqueda: '',
       busquedaActiva: '',
-      categoriaActiva: ''
+      categoriaActiva: '',
+      carrito: [],
+      mensajeAlerta: ''
     };
   },
   computed: {
     nombreCategoriaActiva() {
       const cat = this.categorias.find(c => c.id === this.categoriaActiva);
       return cat ? cat.nombre : '';
+    },
+    totalCarrito() {
+      return this.carrito.reduce((acc, item) => acc + item.precio * item.cantidad, 0);
     }
   },
   mounted() {
@@ -90,6 +95,29 @@ createApp({
     verDetalle(producto) {
       this.productoSeleccionado = producto;
       this.vistaActual = 'detalle';
+    },
+    agregarAlCarrito(producto) {
+      const existente = this.carrito.find(item => item.id === producto.id);
+      if (existente) {
+        existente.cantidad += 1;
+      } else {
+        this.carrito.push({
+          id: producto.id,
+          nombre: producto.nombre,
+          categoria: producto.categoria,
+          precio: producto.precio,
+          imagen: producto.imagen,
+          cantidad: 1
+        });
+      }
+
+      this.mensajeAlerta = `Se agregó "${producto.nombre}" al carrito.`;
+      setTimeout(() => {
+        this.mensajeAlerta = '';
+      }, 2500);
+    },
+    quitarDelCarrito(index) {
+      this.carrito.splice(index, 1);
     }
   }
 }).mount('#app');
