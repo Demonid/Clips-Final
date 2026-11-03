@@ -67,14 +67,14 @@
 
           <!-- Boton Carrito -->
           <button class="btn btn-warning btn-sm fw-semibold" @click="cambiarVista('carrito')">
-            Carrito ({{ carrito.length }})
+            Carrito ({{ totalArticulosCarrito }})
           </button>
         </div>
       </div>
     </nav>
 
     <main class="container my-4">
-      <!-- Mensaje de confirmacion al agregar al carrito -->
+      <!-- Mensaje de confirmacion -->
       <div v-if="mensajeAlerta" class="alert alert-success py-2">
         {{ mensajeAlerta }}
       </div>
@@ -189,7 +189,7 @@
                     <button class="btn btn-outline-primary btn-sm" @click="verDetalle(producto)">
                       Detalle
                     </button>
-                    <button class="btn btn-primary btn-sm" @click="agregarAlCarrito(producto)" :disabled="producto.existencias === 0">
+                    <button class="btn btn-primary btn-sm" @click="agregarAlCarrito(producto, 1)" :disabled="producto.existencias === 0">
                       + Carrito
                     </button>
                   </div>
@@ -220,7 +220,7 @@
                 <p class="fs-3 fw-bold text-primary mb-3">${{ productoSeleccionado.precio.toFixed(2) }}</p>
                 <p class="card-text text-secondary mb-4">{{ productoSeleccionado.descripcion }}</p>
 
-                <p class="mb-4">
+                <p class="mb-3">
                   <strong>Disponibilidad: </strong>
                   <span class="text-success" v-if="productoSeleccionado.existencias > 0">
                     En existencia ({{ productoSeleccionado.existencias }} unidades)
@@ -228,10 +228,20 @@
                   <span class="text-danger" v-else>Agotado</span>
                 </p>
 
+                <!-- Selector de cantidad -->
+                <div class="d-flex align-items-center gap-3 mb-4" v-if="productoSeleccionado.existencias > 0">
+                  <label class="fw-semibold">Cantidad:</label>
+                  <div class="input-group input-group-sm" style="width: 120px;">
+                    <button class="btn btn-outline-secondary" type="button" @click="cantidadDetalle > 1 ? cantidadDetalle-- : null">-</button>
+                    <input type="text" class="form-control text-center" v-model.number="cantidadDetalle" readonly>
+                    <button class="btn btn-outline-secondary" type="button" @click="cantidadDetalle < productoSeleccionado.existencias ? cantidadDetalle++ : null">+</button>
+                  </div>
+                </div>
+
                 <div class="d-flex gap-2">
                   <button
                     class="btn btn-primary"
-                    @click="agregarAlCarrito(productoSeleccionado)"
+                    @click="agregarAlCarrito(productoSeleccionado, cantidadDetalle)"
                     :disabled="productoSeleccionado.existencias === 0"
                   >
                     Agregar al carrito
@@ -267,7 +277,7 @@
                   <th>Producto</th>
                   <th>Categoría</th>
                   <th>Precio unitario</th>
-                  <th>Cantidad</th>
+                  <th style="width: 150px;">Cantidad</th>
                   <th>Subtotal</th>
                   <th></th>
                 </tr>
@@ -282,7 +292,13 @@
                   </td>
                   <td>{{ item.categoria }}</td>
                   <td>${{ item.precio.toFixed(2) }}</td>
-                  <td>{{ item.cantidad }}</td>
+                  <td>
+                    <div class="input-group input-group-sm" style="width: 115px;">
+                      <button class="btn btn-outline-secondary" type="button" @click="cambiarCantidadCarrito(item, -1)">-</button>
+                      <input type="text" class="form-control text-center" :value="item.cantidad" readonly>
+                      <button class="btn btn-outline-secondary" type="button" @click="cambiarCantidadCarrito(item, 1)">+</button>
+                    </div>
+                  </td>
                   <td class="fw-semibold">${{ (item.precio * item.cantidad).toFixed(2) }}</td>
                   <td class="text-end">
                     <button class="btn btn-outline-danger btn-sm" @click="quitarDelCarrito(index)">

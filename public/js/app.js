@@ -8,6 +8,7 @@ createApp({
       productos: [],
       productosDestacados: [],
       productoSeleccionado: null,
+      cantidadDetalle: 1,
       textoBusqueda: '',
       busquedaActiva: '',
       categoriaActiva: '',
@@ -22,6 +23,9 @@ createApp({
     },
     totalCarrito() {
       return this.carrito.reduce((acc, item) => acc + item.precio * item.cantidad, 0);
+    },
+    totalArticulosCarrito() {
+      return this.carrito.reduce((acc, item) => acc + item.cantidad, 0);
     }
   },
   mounted() {
@@ -94,12 +98,14 @@ createApp({
     },
     verDetalle(producto) {
       this.productoSeleccionado = producto;
+      this.cantidadDetalle = 1;
       this.vistaActual = 'detalle';
     },
-    agregarAlCarrito(producto) {
+    agregarAlCarrito(producto, cantidad = 1) {
       const existente = this.carrito.find(item => item.id === producto.id);
       if (existente) {
-        existente.cantidad += 1;
+        const nuevaCantidad = existente.cantidad + cantidad;
+        existente.cantidad = Math.min(nuevaCantidad, producto.existencias);
       } else {
         this.carrito.push({
           id: producto.id,
@@ -107,17 +113,27 @@ createApp({
           categoria: producto.categoria,
           precio: producto.precio,
           imagen: producto.imagen,
-          cantidad: 1
+          existencias: producto.existencias,
+          cantidad: Math.min(cantidad, producto.existencias)
         });
       }
 
-      this.mensajeAlerta = `Se agregó "${producto.nombre}" al carrito.`;
-      setTimeout(() => {
-        this.mensajeAlerta = '';
-      }, 2500);
+      this.mostrarAlerta(`Se agregó "${producto.nombre}" al carrito.`);
+    },
+    cambiarCantidadCarrito(item, cambio) {
+      const nuevaCantidad = item.cantidad + cambio;
+      if (nuevaCantidad >= 1 && nuevaCantidad <= item.existencias) {
+        item.cantidad = nuevaCantidad;
+      }
     },
     quitarDelCarrito(index) {
       this.carrito.splice(index, 1);
+    },
+    mostrarAlerta(texto) {
+      this.mensajeAlerta = texto;
+      setTimeout(() => {
+        this.mensajeAlerta = '';
+      }, 2500);
     }
   }
 }).mount('#app');
