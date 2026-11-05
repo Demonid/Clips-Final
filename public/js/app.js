@@ -13,7 +13,19 @@ createApp({
       busquedaActiva: '',
       categoriaActiva: '',
       carrito: [],
-      mensajeAlerta: ''
+      usuarioActual: null,
+      formLogin: {
+        correo: '',
+        password: ''
+      },
+      formRegistro: {
+        nombre: '',
+        correo: '',
+        telefono: '',
+        password: ''
+      },
+      mensajeAlerta: '',
+      mensajeError: ''
     };
   },
   computed: {
@@ -34,6 +46,7 @@ createApp({
   },
   methods: {
     cambiarVista(vista) {
+      this.mensajeError = '';
       this.vistaActual = vista;
     },
     irInicio() {
@@ -128,6 +141,57 @@ createApp({
     },
     quitarDelCarrito(index) {
       this.carrito.splice(index, 1);
+    },
+    async iniciarSesion() {
+      this.mensajeError = '';
+      try {
+        const res = await fetch('/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(this.formLogin)
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+          this.mensajeError = data.error || 'Error al iniciar sesión';
+          return;
+        }
+
+        this.usuarioActual = data;
+        this.formLogin = { correo: '', password: '' };
+        this.mostrarAlerta(`Bienvenido, ${data.nombre}`);
+        this.vistaActual = 'inicio';
+      } catch (error) {
+        this.mensajeError = 'No se pudo conectar con el servidor';
+      }
+    },
+    async registrarUsuario() {
+      this.mensajeError = '';
+      try {
+        const res = await fetch('/api/registro', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(this.formRegistro)
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+          this.mensajeError = data.error || 'Error al registrar usuario';
+          return;
+        }
+
+        this.usuarioActual = data;
+        this.formRegistro = { nombre: '', correo: '', telefono: '', password: '' };
+        this.mostrarAlerta('Cuenta creada correctamente.');
+        this.vistaActual = 'inicio';
+      } catch (error) {
+        this.mensajeError = 'No se pudo conectar con el servidor';
+      }
+    },
+    cerrarSesion() {
+      this.usuarioActual = null;
+      this.mostrarAlerta('Sesión cerrada.');
+      this.vistaActual = 'inicio';
     },
     mostrarAlerta(texto) {
       this.mensajeAlerta = texto;

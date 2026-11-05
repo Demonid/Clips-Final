@@ -9,6 +9,44 @@ const PORT = 3000;
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Iniciar sesion
+app.post('/api/login', (req, res) => {
+  const { correo, password } = req.body;
+  const sql = 'SELECT id, nombre, correo, telefono, rol FROM usuarios WHERE correo = ? AND password = ?';
+
+  db.get(sql, [correo, password], (err, row) => {
+    if (err) {
+      return res.status(500).json({ error: 'Error al iniciar sesion' });
+    }
+    if (!row) {
+      return res.status(401).json({ error: 'Correo o contraseña incorrectos' });
+    }
+    res.json(row);
+  });
+});
+
+// Registrar nuevo usuario
+app.post('/api/registro', (req, res) => {
+  const { nombre, correo, telefono, password } = req.body;
+  if (!nombre || !correo || !password) {
+    return res.status(400).json({ error: 'Todos los campos obligatorios deben completarse' });
+  }
+
+  const sql = 'INSERT INTO usuarios (nombre, correo, telefono, password, rol) VALUES (?, ?, ?, ?, ?)';
+  db.run(sql, [nombre, correo, telefono || '', password, 'cliente'], function (err) {
+    if (err) {
+      return res.status(400).json({ error: 'El correo ya está registrado' });
+    }
+    res.json({
+      id: this.lastID,
+      nombre,
+      correo,
+      telefono: telefono || '',
+      rol: 'cliente'
+    });
+  });
+});
+
 // Obtener todas las categorias
 app.get('/api/categorias', (req, res) => {
   db.all('SELECT * FROM categorias', [], (err, rows) => {

@@ -31,6 +31,7 @@ db.serialize(() => {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       nombre TEXT NOT NULL,
       correo TEXT UNIQUE NOT NULL,
+      telefono TEXT,
       password TEXT NOT NULL,
       rol TEXT DEFAULT 'cliente'
     )
@@ -46,6 +47,19 @@ db.serialize(() => {
       FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
     )
   `);
+
+  // Insertar usuarios de prueba si no existen
+  db.get('SELECT COUNT(*) AS count FROM usuarios', (err, row) => {
+    if (err || row.count > 0) return;
+
+    const stmtUser = db.prepare(`
+      INSERT INTO usuarios (nombre, correo, telefono, password, rol)
+      VALUES (?, ?, ?, ?, ?)
+    `);
+    stmtUser.run(['Administrador', 'admin@clips.com', '3310000000', 'admin123', 'admin']);
+    stmtUser.run(['Cliente Demo', 'cliente@correo.com', '3320000000', '123456', 'cliente']);
+    stmtUser.finalize();
+  });
 
   // Verificar si ya existen categorias para no duplicar datos
   db.get('SELECT COUNT(*) AS count FROM categorias', (err, row) => {
