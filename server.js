@@ -107,6 +107,50 @@ app.get('/api/productos/:id', (req, res) => {
   });
 });
 
+// Registrar un nuevo pedido y descontar inventario
+app.post('/api/pedidos', (req, res) => {
+  const { usuario_id, nombre_cliente, telefono, notas, total, articulos } = req.body;
+
+  if (!articulos || articulos.length === 0) {
+    return res.status(400).json({ error: 'El pedido no contiene productos' });
+  }
+
+  const sqlPedido = `
+    INSERT INTO pedidos (usuario_id, nombre_cliente, telefono, notas, total, estado)
+    VALUES (?, ?, ?, ?, ?, 'Pendiente')
+  `;
+
+  db.run(sqlPedido, [usuario_id || null, nombre_cliente, telefono, notas || '', total], function (err) {
+    if (err) {
+      return res.status(500).json({ error: 'Error al guardar el pedido' });
+    }
+
+    const pedidoId = this.lastID;
+    const stmtDetalle = db.prepare(`
+      INSERT INTO detalle_pedidos (pedido_id, producto_id, nombre_producto, precio, cantidad)
+      VALUES (?, ?, ?, ?, ?)
+    `);
+    const stmtStock = db.prepare(`
+      UPDATE productos SET existencias = MAX(0, existencias - ?) WHERE id = ?
+    `);
+
+    articulos.forEach(item => {
+      stmtDetalle.run([pedidoId, item.id, item.nombre, item.precio, item.cantidad]);
+      stmtStock.run([item.cantidad, item.id]);
+    });
+
+    stmtDetalle.finalize();
+    stmtStock.finalize();
+
+    db.get('SELECT * FROM pedidos WHERE id = ?', [pedidoId], (err2, row) => {
+      if (err2) {
+        return res.status(500).json({ error: 'Error al recuperar el pedido registrado' });
+      }
+      res.json(row);
+    });
+  });
+});
+
 // Ruta principal
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));

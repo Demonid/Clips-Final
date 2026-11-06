@@ -41,10 +41,25 @@ db.serialize(() => {
     CREATE TABLE IF NOT EXISTS pedidos (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       usuario_id INTEGER,
+      nombre_cliente TEXT,
+      telefono TEXT,
+      notas TEXT,
       fecha TEXT DEFAULT CURRENT_TIMESTAMP,
       total REAL NOT NULL,
       estado TEXT DEFAULT 'Pendiente',
       FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
+    )
+  `);
+
+  db.run(`
+    CREATE TABLE IF NOT EXISTS detalle_pedidos (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      pedido_id INTEGER,
+      producto_id INTEGER,
+      nombre_producto TEXT,
+      precio REAL,
+      cantidad INTEGER,
+      FOREIGN KEY (pedido_id) REFERENCES pedidos(id)
     )
   `);
 

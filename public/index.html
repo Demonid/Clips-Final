@@ -326,9 +326,100 @@
 
           <div class="card-footer bg-white d-flex justify-content-between align-items-center py-3">
             <span class="fs-5 fw-bold">Total: ${{ totalCarrito.toFixed(2) }}</span>
-            <button class="btn btn-success" disabled>
-              Continuar con el pedido (Próximamente)
+            <button class="btn btn-success" @click="irARegistroPedido">
+              Continuar con el pedido &rarr;
             </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Vista: Registro de pedido -->
+      <section v-if="vistaActual === 'pedido'">
+        <h2 class="mb-3">Registro de pedido</h2>
+
+        <div class="row g-4">
+          <div class="col-md-7">
+            <div class="card shadow-sm">
+              <div class="card-body p-4">
+                <h5 class="card-title mb-3">Datos de contacto y entrega</h5>
+                <form @submit.prevent="confirmarPedido">
+                  <div class="mb-3">
+                    <label class="form-label">Nombre de quien recoge</label>
+                    <input type="text" class="form-control" v-model="formPedido.nombre_cliente" required>
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">Teléfono de contacto</label>
+                    <input type="text" class="form-control" v-model="formPedido.telefono" required placeholder="33 0000 0000">
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">Modalidad de entrega</label>
+                    <input type="text" class="form-control bg-light" value="Recoger en tienda y pagar en mostrador" readonly>
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">Notas adicionales (opcional)</label>
+                    <textarea class="form-control" rows="2" v-model="formPedido.notas" placeholder="Horario aproximado de recolección o comentarios..."></textarea>
+                  </div>
+
+                  <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-outline-secondary" @click="cambiarVista('carrito')">
+                      &larr; Volver al carrito
+                    </button>
+                    <button type="submit" class="btn btn-success flex-grow-1">
+                      Confirmar pedido
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-5">
+            <div class="card shadow-sm bg-light">
+              <div class="card-body p-4">
+                <h5 class="card-title mb-3">Resumen del pedido</h5>
+                <ul class="list-group list-group-flush mb-3 rounded">
+                  <li class="list-group-item d-flex justify-content-between align-items-center" v-for="item in carrito" :key="item.id">
+                    <span>{{ item.cantidad }}x {{ item.nombre }}</span>
+                    <span class="fw-semibold">${{ (item.precio * item.cantidad).toFixed(2) }}</span>
+                  </li>
+                </ul>
+                <div class="d-flex justify-content-between fs-5 fw-bold">
+                  <span>Total a pagar:</span>
+                  <span class="text-primary">${{ totalCarrito.toFixed(2) }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Vista: Confirmacion del pedido -->
+      <section v-if="vistaActual === 'confirmacion' && pedidoConfirmado">
+        <div class="row justify-content-center">
+          <div class="col-md-6">
+            <div class="card shadow-sm text-center p-4">
+              <div class="card-body">
+                <div class="display-5 text-success mb-2">&#10003;</div>
+                <h3 class="mb-2">¡Pedido registrado con éxito!</h3>
+                <p class="text-muted">
+                  Tu pedido ha sido guardado y estará listo para recoger en tienda.
+                </p>
+
+                <div class="bg-light border rounded p-3 text-start my-3">
+                  <p class="mb-1"><strong>Folio del pedido:</strong> #PED-{{ String(pedidoConfirmado.id).padStart(4, '0') }}</p>
+                  <p class="mb-1"><strong>Cliente:</strong> {{ pedidoConfirmado.nombre_cliente }}</p>
+                  <p class="mb-1"><strong>Fecha:</strong> {{ pedidoConfirmado.fecha }}</p>
+                  <p class="mb-1"><strong>Estado:</strong> <span class="badge bg-warning text-dark">{{ pedidoConfirmado.estado }}</span></p>
+                  <p class="mb-0"><strong>Total:</strong> ${{ Number(pedidoConfirmado.total).toFixed(2) }}</p>
+                </div>
+
+                <div class="d-flex justify-content-center gap-2 mt-3">
+                  <button class="btn btn-primary" @click="irInicio">
+                    Volver al inicio
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>

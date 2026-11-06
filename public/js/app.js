@@ -24,6 +24,12 @@ createApp({
         telefono: '',
         password: ''
       },
+      formPedido: {
+        nombre_cliente: '',
+        telefono: '',
+        notas: ''
+      },
+      pedidoConfirmado: null,
       mensajeAlerta: '',
       mensajeError: ''
     };
@@ -142,6 +148,50 @@ createApp({
     quitarDelCarrito(index) {
       this.carrito.splice(index, 1);
     },
+    irARegistroPedido() {
+      if (!this.usuarioActual) {
+        this.mostrarAlerta('Inicia sesión para registrar tu pedido.');
+        this.vistaActual = 'login';
+        return;
+      }
+
+      this.formPedido.nombre_cliente = this.usuarioActual.nombre || '';
+      this.formPedido.telefono = this.usuarioActual.telefono || '';
+      this.formPedido.notas = '';
+      this.vistaActual = 'pedido';
+    },
+    async confirmarPedido() {
+      this.mensajeError = '';
+      try {
+        const payload = {
+          usuario_id: this.usuarioActual ? this.usuarioActual.id : null,
+          nombre_cliente: this.formPedido.nombre_cliente,
+          telefono: this.formPedido.telefono,
+          notas: this.formPedido.notas,
+          total: this.totalCarrito,
+          articulos: this.carrito
+        };
+
+        const res = await fetch('/api/pedidos', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+          this.mensajeError = data.error || 'Error al registrar el pedido';
+          return;
+        }
+
+        this.pedidoConfirmado = data;
+        this.carrito = [];
+        await this.cargarProductosIniciales();
+        this.vistaActual = 'confirmacion';
+      } catch (error) {
+        this.mensajeError = 'No se pudo registrar el pedido';
+      }
+    },
     async iniciarSesion() {
       this.mensajeError = '';
       try {
@@ -160,7 +210,7 @@ createApp({
         this.usuarioActual = data;
         this.formLogin = { correo: '', password: '' };
         this.mostrarAlerta(`Bienvenido, ${data.nombre}`);
-        this.vistaActual = 'inicio';
+        this.vistaActual = this.carrito.length > 0 ? 'carrito' : 'inicio';
       } catch (error) {
         this.mensajeError = 'No se pudo conectar con el servidor';
       }
@@ -183,7 +233,7 @@ createApp({
         this.usuarioActual = data;
         this.formRegistro = { nombre: '', correo: '', telefono: '', password: '' };
         this.mostrarAlerta('Cuenta creada correctamente.');
-        this.vistaActual = 'inicio';
+        this.vistaActual = this.carrito.length > 0 ? 'carrito' : 'inicio';
       } catch (error) {
         this.mensajeError = 'No se pudo conectar con el servidor';
       }
