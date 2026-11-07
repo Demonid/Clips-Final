@@ -151,6 +151,32 @@ app.post('/api/pedidos', (req, res) => {
   });
 });
 
+// Consultar pedidos de un usuario especifico
+app.get('/api/mis-pedidos/:usuario_id', (req, res) => {
+  const sqlPedidos = 'SELECT * FROM pedidos WHERE usuario_id = ? ORDER BY id DESC';
+
+  db.all(sqlPedidos, [req.params.usuario_id], (err, pedidos) => {
+    if (err) {
+      return res.status(500).json({ error: 'Error al consultar pedidos' });
+    }
+    if (pedidos.length === 0) {
+      return res.json([]);
+    }
+
+    db.all('SELECT * FROM detalle_pedidos', [], (err2, detalles) => {
+      if (err2) {
+        return res.status(500).json({ error: 'Error al consultar detalle de pedidos' });
+      }
+
+      const resultado = pedidos.map(p => ({
+        ...p,
+        articulos: detalles.filter(d => d.pedido_id === p.id)
+      }));
+      res.json(resultado);
+    });
+  });
+});
+
 // Ruta principal
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));

@@ -50,6 +50,11 @@
                 </li>
               </ul>
             </li>
+            <li class="nav-item" v-if="usuarioActual">
+              <a class="nav-link" :class="{ active: vistaActual === 'mis-pedidos' }" href="#" @click.prevent="verMisPedidos">
+                Mis pedidos
+              </a>
+            </li>
           </ul>
 
           <!-- Buscador de productos -->
@@ -414,12 +419,81 @@
                 </div>
 
                 <div class="d-flex justify-content-center gap-2 mt-3">
+                  <button class="btn btn-outline-primary" @click="verMisPedidos">
+                    Ver mis pedidos
+                  </button>
                   <button class="btn btn-primary" @click="irInicio">
                     Volver al inicio
                   </button>
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Vista: Mis pedidos -->
+      <section v-if="vistaActual === 'mis-pedidos'">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h2 class="mb-0">Mis pedidos</h2>
+          <button class="btn btn-outline-secondary btn-sm" @click="verCatalogoCompleto">
+            Ir al catálogo
+          </button>
+        </div>
+
+        <div v-if="misPedidos.length === 0" class="alert alert-secondary">
+          Aún no has registrado ningún pedido.
+        </div>
+
+        <div v-else class="card shadow-sm">
+          <div class="table-responsive">
+            <table class="table align-middle mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th>Folio</th>
+                  <th>Fecha</th>
+                  <th>Artículos</th>
+                  <th>Total</th>
+                  <th>Estado</th>
+                  <th>Detalle</th>
+                </tr>
+              </thead>
+              <tbody>
+                <template v-for="pedido in misPedidos" :key="pedido.id">
+                  <tr>
+                    <td class="fw-semibold">#PED-{{ String(pedido.id).padStart(4, '0') }}</td>
+                    <td>{{ pedido.fecha }}</td>
+                    <td>{{ pedido.articulos ? pedido.articulos.length : 0 }} producto(s)</td>
+                    <td class="fw-semibold">${{ Number(pedido.total).toFixed(2) }}</td>
+                    <td>
+                      <span class="badge" :class="pedido.estado === 'Entregado' ? 'bg-success' : 'bg-warning text-dark'">
+                        {{ pedido.estado }}
+                      </span>
+                    </td>
+                    <td>
+                      <button class="btn btn-outline-primary btn-sm" @click="pedidoDetalleVisible = pedidoDetalleVisible === pedido.id ? null : pedido.id">
+                        {{ pedidoDetalleVisible === pedido.id ? 'Ocultar' : 'Ver detalle' }}
+                      </button>
+                    </td>
+                  </tr>
+                  <tr v-if="pedidoDetalleVisible === pedido.id" class="bg-light">
+                    <td colspan="6" class="p-3">
+                      <div class="small">
+                        <strong>Productos del pedido:</strong>
+                        <ul class="mb-1 mt-1">
+                          <li v-for="art in pedido.articulos" :key="art.id">
+                            {{ art.cantidad }}x {{ art.nombre_producto }} — ${{ (art.precio * art.cantidad).toFixed(2) }}
+                          </li>
+                        </ul>
+                        <div v-if="pedido.notas" class="text-muted">
+                          <strong>Notas:</strong> {{ pedido.notas }}
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                </template>
+              </tbody>
+            </table>
           </div>
         </div>
       </section>

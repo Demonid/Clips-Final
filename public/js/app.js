@@ -30,6 +30,8 @@ createApp({
         notas: ''
       },
       pedidoConfirmado: null,
+      misPedidos: [],
+      pedidoDetalleVisible: null,
       mensajeAlerta: '',
       mensajeError: ''
     };
@@ -192,6 +194,17 @@ createApp({
         this.mensajeError = 'No se pudo registrar el pedido';
       }
     },
+    async verMisPedidos() {
+      if (!this.usuarioActual) return;
+      try {
+        const res = await fetch(`/api/mis-pedidos/${this.usuarioActual.id}`);
+        this.misPedidos = await res.json();
+        this.pedidoDetalleVisible = null;
+        this.vistaActual = 'mis-pedidos';
+      } catch (error) {
+        console.error('Error al consultar mis pedidos:', error);
+      }
+    },
     async iniciarSesion() {
       this.mensajeError = '';
       try {
@@ -240,6 +253,7 @@ createApp({
     },
     cerrarSesion() {
       this.usuarioActual = null;
+      this.misPedidos = [];
       this.mostrarAlerta('Sesión cerrada.');
       this.vistaActual = 'inicio';
     },
